@@ -1,5 +1,16 @@
 # Multi-Cloud Nexus Governance Framework 🌐
 
+## Architecture Diagram
+
+```mermaid
+graph TD
+  NexusControl --> AWS_VPC
+  NexusControl --> GCP_VPC
+  NexusControl --> Azure_VNet
+  NexusControl --> OCI_VCN
+```
+
+
 An enterprise-grade, production-ready framework for orchestrating and governing infrastructure across **AWS, GCP, Azure, and Oracle Cloud (OCI)** using Terraform and automated security auditing.
 
 ## 🚀 Key Features
