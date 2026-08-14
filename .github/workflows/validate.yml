@@ -1,0 +1,35 @@
+name: Validate Multi-Cloud Governance
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  governance:
+    name: Static governance checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 scripts/validate-governance.py
+
+  terraform:
+    name: Terraform validate (${{ matrix.provider }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: [aws, gcp, azure, oci]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+      - run: ./scripts/validate-provider.sh ${{ matrix.provider }}
+
+# Plans and applies require provider identities, remote state, and approved change control.
+# This workflow performs no cloud-side mutation.
