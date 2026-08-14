@@ -1,5 +1,10 @@
-resource "oci_core_vcn" "vcn" {
-  cidr_block     = "10.3.0.0/16"
+provider "oci" {
+  region = var.region
+}
+
+resource "oci_core_vcn" "nexus" {
   compartment_id = var.compartment_id
-  display_name   = "nexus-vcn-oci"
+  display_name   = var.display_name
+  cidr_block     = var.cidr
+  dns_label      = "nexusoci"
 }

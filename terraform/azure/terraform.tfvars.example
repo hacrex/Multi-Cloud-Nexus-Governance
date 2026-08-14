@@ -1,0 +1,3 @@
+location            = "eastus"
+resource_group_name = "nexus-rg-dev"
+vnet_name           = "nexus-vnet-dev"

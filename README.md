@@ -1,47 +1,42 @@
-# Multi-Cloud Nexus Governance Framework 🌐
+# Multi-Cloud Nexus Governance Framework
 
-## Architecture Diagram
+A **plan-first Terraform reference** for establishing small, independent network foundations across AWS, Google Cloud, Microsoft Azure, and Oracle Cloud Infrastructure (OCI). The project demonstrates consistent naming, CIDR planning, isolated provider roots, and non-production validation practices.
+
+> This is not a one-click production landing zone. It intentionally avoids creating clusters, private connectivity, IAM organisations, or shared state backends because these require organisation-specific security and architecture decisions.
+
+## Architecture
 
 ```mermaid
-graph TD
-  NexusControl --> AWS_VPC
-  NexusControl --> GCP_VPC
-  NexusControl --> Azure_VNet
-  NexusControl --> OCI_VCN
+flowchart TB
+  Git[Reviewed Terraform change] --> AWS[AWS VPC root]
+  Git --> GCP[GCP VPC root]
+  Git --> Azure[Azure VNet root]
+  Git --> OCI[OCI VCN root]
+  AWS --> Obs[Provider-native audit and observability]
+  GCP --> Obs
+  Azure --> Obs
+  OCI --> Obs
 ```
 
+## Repository Layout
 
-An enterprise-grade, production-ready framework for orchestrating and governing infrastructure across **AWS, GCP, Azure, and Oracle Cloud (OCI)** using Terraform and automated security auditing.
+| Directory | Scope |
+|---|---|
+| `terraform/aws` | VPC reference with variable-driven region, CIDR, AZs, and tags. |
+| `terraform/gcp` | Custom VPC and regional subnet reference. |
+| `terraform/azure` | Resource group, VNet, and workload subnet reference. |
+| `terraform/oci` | VCN reference with compartment and region inputs. |
 
-## 🚀 Key Features
-- **Multi-Cloud Landing Zones**: Standardized VPC/VNet/VCN provisioning across four major providers.
-- **Unified Governance**: Centralized tagging strategy and IAM boundary enforcement.
-- **Cross-Cloud Connectivity**: Architectural patterns for hybrid-cloud networking and VPN tunneling.
-- **Security Auditing**: Integrated scripts for multi-cloud security posture assessment.
-- **FinOps Ready**: Automated cost reporting and resource right-sizing logic.
+## Plan Safely
 
-## 🏗️ Architecture
-The project is structured to allow independent or unified deployment of cloud resources:
-- `terraform/aws`: EKS, VPC, and S3 governance.
-- `terraform/gcp`: GKE, Cloud SQL, and IAM security.
-- `terraform/azure`: AKS, VNet, and Sentinel integration.
-- `terraform/oci`: VCN, Autonomous DB, and OCI Identity.
+Each provider root has a `terraform.tfvars.example` file. Copy it to `terraform.tfvars`, use a disposable environment, then run:
 
-## 🛠️ Tech Stack
-- **IaC**: Terraform (HashiCorp)
-- **Clouds**: AWS, Google Cloud, Microsoft Azure, Oracle Cloud Infrastructure
-- **Security**: ScoutSuite, Checkov, Open Policy Agent (OPA)
-- **CI/CD**: GitHub Actions / GitLab CI
+```bash
+cd terraform/<provider>
+terraform fmt -check -recursive
+terraform init -backend=false
+terraform validate
+terraform plan
+```
 
-## 📜 Usage
-1. Configure your cloud credentials for all providers.
-2. Navigate to the desired cloud directory in `terraform/`.
-3. Run `terraform init` and `terraform apply`.
-
----
-*Maintained by [HacRex](https://github.com/hacrex)*
-
-## 🛠️ Functional Templates
-This repository includes production-ready templates to get started quickly:
-- **Terraform**: Located in `terraform/templates/` for cluster and provider setup.
-- **Kubernetes**: Located in `kubernetes/manifests/` for application deployment and security policies.
+Use a remote encrypted state backend, locking where supported, short-lived identities, peer-reviewed CI plans, and organisation-specific policy checks before applying any production infrastructure. See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for scope and safety notes.
