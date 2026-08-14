@@ -1,42 +1,20 @@
-# Multi-Cloud Nexus Governance Framework
+# Multi-Cloud Nexus Governance
 
-A **plan-first Terraform reference** for establishing small, independent network foundations across AWS, Google Cloud, Microsoft Azure, and Oracle Cloud Infrastructure (OCI). The project demonstrates consistent naming, CIDR planning, isolated provider roots, and non-production validation practices.
+A Terraform reference for laying out a small network foundation in AWS, GCP, Azure, and OCI. Each provider has its own root under `terraform/` so state, credentials, and change reviews can stay separate.
 
-> This is not a one-click production landing zone. It intentionally avoids creating clusters, private connectivity, IAM organisations, or shared state backends because these require organisation-specific security and architecture decisions.
-
-## Architecture
-
-```mermaid
-flowchart TB
-  Git[Reviewed Terraform change] --> AWS[AWS VPC root]
-  Git --> GCP[GCP VPC root]
-  Git --> Azure[Azure VNet root]
-  Git --> OCI[OCI VCN root]
-  AWS --> Obs[Provider-native audit and observability]
-  GCP --> Obs
-  Azure --> Obs
-  OCI --> Obs
-```
-
-## Repository Layout
-
-| Directory | Scope |
-|---|---|
-| `terraform/aws` | VPC reference with variable-driven region, CIDR, AZs, and tags. |
-| `terraform/gcp` | Custom VPC and regional subnet reference. |
-| `terraform/azure` | Resource group, VNet, and workload subnet reference. |
-| `terraform/oci` | VCN reference with compartment and region inputs. |
-
-## Plan Safely
-
-Each provider root has a `terraform.tfvars.example` file. Copy it to `terraform.tfvars`, use a disposable environment, then run:
+## Check the repository
 
 ```bash
-cd terraform/<provider>
-terraform fmt -check -recursive
-terraform init -backend=false
-terraform validate
-terraform plan
+python3 scripts/validate-governance.py
+./scripts/validate-provider.sh aws
 ```
 
-Use a remote encrypted state backend, locking where supported, short-lived identities, peer-reviewed CI plans, and organisation-specific policy checks before applying any production infrastructure. See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for scope and safety notes.
+The first command checks provider-root structure, obvious static credential assignments, and unrestricted CIDRs. The second command formats and validates one provider root without configuring a remote backend.
+
+## Use a sandbox first
+
+Copy the relevant `terraform.tfvars.example` file, fill in a sandbox account or project, and keep the resulting variables file out of Git. A plan or apply needs an approved provider identity and the right remote-state setup.
+
+## Design notes
+
+`docs/STATE_AND_IDENTITY.md` explains the intended state boundaries and short-lived CI identity flow. `docs/GOVERNANCE_CONVENTIONS.md` lists the common ownership, environment, cost, classification, and change-management fields. The repository keeps provider-specific resources visible instead of hiding them behind a large abstraction layer.
